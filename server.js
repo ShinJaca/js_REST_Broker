@@ -26,15 +26,11 @@ function notify(topic_name, data) {
     topics[topic_name].map(value => {
         axios({
             method: 'post',
-            url: `${value}/notify`,
+            url: `${value}`,
             data: data
-        }).then(res=>{
-            console.log(res.data);
         }).catch(err=>{
-            console.log(err);
+            console.log(`[FAIL] Request error: ${value}`);
         })
-        console.log(value);
-        console.log(data);
     })
 }
 
