@@ -1,7 +1,15 @@
 var restify = require('restify');
 var axios = require('axios');
+var corsMiddleware = require('restify-cors-middleware')
 
+const cors = corsMiddleware({
+    origins: ["*"],
+    allowHeaders: ["Authorization"],
+    exposeHeaders: ["Authorization"]
+})
 var server = restify.createServer();
+server.pre(cors.preflight);
+server.use(cors.actual);
 server.use(restify.plugins.bodyParser());
 
 var topic_resource = "/topic"
@@ -10,8 +18,8 @@ var topics = {
     press: []
 };
 var posts = {
-    temp: [],
-    press: []
+    temp: {},
+    press: {}
 }
 
 
@@ -28,7 +36,7 @@ function notify(topic_name, data) {
             method: 'post',
             url: `${value}`,
             data: data
-        }).catch(err=>{
+        }).catch(err => {
             console.log(`[FAIL] Request error: ${value}`);
         })
     })
@@ -44,7 +52,10 @@ function handle_topicRetrieve(req, res, next) {
 }
 
 function handle_topicPublish(req, res, next) {
-    posts[req.params.topic].push(req.body)
+    posts[req.params.topic][req.body.id] = {
+        msg: req.body.msg,
+        desc: req.body.desc
+    }
     notify(req.params.topic, req.body);
     res.send('[ ok ] posted on:' + req.params.topic + "  msg: " + req.body.msg);
 }
@@ -54,7 +65,6 @@ function handle_topicCreate(req, res, next) {
     posts[req.body.name] = [];
     res.send(`[ ok ] topic created: ${req.body.name}`)
 }
-
 
 
 
